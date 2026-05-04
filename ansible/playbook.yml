@@ -1,0 +1,81 @@
+---
+- name: DustWatch - Configure Environment & Deploy
+  hosts: local
+  become: false
+  vars:
+    app_name: "dustwatch"
+    namespace: "dustwatch"
+    docker_image: "yourdockerhub/dustwatch:latest"
+    app_port: 5000
+    k8s_dir: "{{ playbook_dir }}/../k8s"
+
+  tasks:
+    # ---- ตรวจสอบ tools ที่จำเป็น ----
+    - name: ตรวจสอบว่า kubectl ติดตั้งแล้ว
+      command: kubectl version --client
+      register: kubectl_check
+      changed_when: false
+
+    - name: ตรวจสอบว่า Minikube รันอยู่
+      command: minikube status
+      register: minikube_status
+      changed_when: false
+      ignore_errors: true
+
+    - name: Start Minikube ถ้ายังไม่รัน
+      command: minikube start --driver=docker
+      when: minikube_status.rc != 0
+
+    # ---- ติดตั้ง Python dependencies บน local ----
+    - name: ติดตั้ง pip packages ที่จำเป็น
+      pip:
+        name:
+          - requests
+          - flask
+          - prometheus-client
+        state: present
+      ignore_errors: true
+
+    # ---- สร้าง Kubernetes Namespace ----
+    - name: สร้าง namespace {{ namespace }}
+      command: >
+        kubectl create namespace {{ namespace }}
+        --dry-run=client -o yaml | kubectl apply -f -
+      changed_when: false
+
+    # ---- Deploy แอปขึ้น Kubernetes ----
+    - name: Apply Kubernetes deployment
+      command: kubectl apply -f {{ k8s_dir }}/deployment.yaml -n {{ namespace }}
+      register: deploy_result
+
+    - name: Apply Kubernetes service
+      command: kubectl apply -f {{ k8s_dir }}/service.yaml -n {{ namespace }}
+      register: service_result
+
+    # ---- รอให้ Pods พร้อม ----
+    - name: รอให้ deployment พร้อม
+      command: >
+        kubectl rollout status deployment/{{ app_name }}
+        -n {{ namespace }} --timeout=120s
+      register: rollout_status
+
+    # ---- แสดงผลสรุป ----
+    - name: แสดงสถานะ Pods
+      command: kubectl get pods -n {{ namespace }}
+      register: pods_status
+      changed_when: false
+
+    - name: แสดงผล
+      debug:
+        msg: "{{ pods_status.stdout_lines }}"
+
+    - name: แสดง NodePort URL
+      command: minikube service {{ app_name }}-service -n {{ namespace }} --url
+      register: service_url
+      changed_when: false
+      ignore_errors: true
+
+    - name: URL สำหรับเข้าถึงแอป
+      debug:
+        msg: "✅ DustWatch พร้อมใช้งานที่: {{ service_url.stdout }}"
+      when: service_url.rc == 0
