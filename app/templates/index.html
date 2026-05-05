@@ -1,0 +1,23 @@
+```html:app/templates/index.html
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>SafeBreathe Gateway - Monitoring</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+        .status-box { padding: 20px; border-radius: 10px; display: inline-block; }
+        .safe { background-color: #d4edda; color: #155724; }
+        .danger { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🌬️ SafeBreathe Gateway</h1>
+    <div class="status-box {{ 'danger' if pm25 > 50 else 'safe' }}">
+        <h2>ค่าฝุ่น PM2.5 ปัจจุบัน: {{ pm25 }} µg/m³</h2>
+        <h3> คำแนะนำ: {{ action }}</h3>
+    </div>
+    <p>อัปเดตข้อมูลล่าสุดเมื่อ: {{ last_updated }}</p>
+    <p><small>*ดึงข้อมูลจาก DustBoy API (จำกัด 10 ครั้ง/ชม.)</small></p>
+</body>
+</html>
