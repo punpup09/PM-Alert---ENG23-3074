@@ -14,23 +14,23 @@
 ## 📁 โครงสร้างโปรเจค (Project Structure)
 ```text
 │
-├── app/                        ← คน 1 (App Developer)
+├── app/                        ← คน 1 (App Developer)✅
 │   ├── app.py
 │   ├── requirements.txt
 │   └── templates/
 │       └── index.html
 │
-├── Dockerfile                  ← คน 1
+├── Dockerfile                  ← คน 1 (App Developer)✅
 │
 ├── Jenkinsfile                 ← คน 2 (CI/CD Engineer)
 │
-├── terraform/                  ← คน 3 (เรา) ✅
+├── terraform/                  ← คน 3 Infrastructure ✅
 │   ├── main.tf
 │   ├── variables.tf
 │   ├── outputs.tf
 │   └── inventory.tpl
 │
-├── ansible/                    ← คน 3 (เรา) ✅
+├── ansible/                    ← คน 3 Infrastructure ✅
 │   ├── inventory
 │   └── playbook.yml
 │
