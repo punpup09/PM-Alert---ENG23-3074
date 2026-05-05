@@ -1,8 +1,8 @@
-# 🌬️ SafeBreathe Gateway
+# PM-Aleart
 
-**SafeBreathe Gateway** เป็นแอปพลิเคชันสำหรับการตรวจสอบคุณภาพอากาศ (PM2.5) และให้คำแนะนำด้านความปลอดภัยแบบเรียลไทม์ โดยดึงข้อมูลจาก **DustBoy API (CMU CCDC)** โปรเจคนี้ถูกออกแบบมาเพื่อรองรับสถาปัตยกรรมแบบ Cloud-Native และสามารถทำงานร่วมกับระบบ CI/CD (Jenkins), Kubernetes และระบบ Monitoring (Prometheus/Grafana) ได้อย่างสมบูรณ์
+**PM-Aleart** เป็นแอปพลิเคชันสำหรับการตรวจสอบคุณภาพอากาศ (PM2.5) และให้คำแนะนำด้านความปลอดภัยแบบเรียลไทม์ โดยดึงข้อมูลจาก **DustBoy API (CMU CCDC)** โปรเจคนี้ถูกออกแบบมาเพื่อรองรับสถาปัตยกรรมแบบ Cloud-Native และสามารถทำงานร่วมกับระบบ CI/CD (Jenkins), Kubernetes และระบบ Monitoring (Prometheus/Grafana) ได้อย่างสมบูรณ์
 
-## 🌟 ฟีเจอร์หลัก (Key Features)
+## ฟีเจอร์หลัก (Key Features)
 *   **Real-time Monitoring:** ดึงข้อมูลค่าฝุ่น PM2.5 จากสถานีตรวจวัดจริง
 *   **Action Logic:** ประมวลผลและให้คำแนะนำด้านสุขภาพโดยอัตโนมัติ (เช่น Safe, Danger)
 *   **Mock Mode:** รองรับโหมดจำลองข้อมูลอัตโนมัติหากไม่ได้ใส่ API Key เพื่อให้ระบบยังคงทำงานได้โดยไม่พัง
@@ -43,9 +43,10 @@
 │   └── grafana-dashboard.json
 │
 └── README.md                   ← คน 1 (ทุกคนช่วยเขียน)
+```
 
 
-## 🚀 วิธีการติดตั้งและรันแอปพลิเคชัน (Setup Instructions)
+## วิธีการติดตั้งและรันแอปพลิเคชัน (Setup Instructions)
 
 โปรเจคนี้รองรับการทำงาน 2 รูปแบบ ทั้งแบบ Local Development และแบบ Docker Container
 
@@ -58,12 +59,14 @@
 
 2. **กำหนดค่า Environment (ทางเลือก)**
     หากคุณมี API Key จาก CMU CCDC ให้ตั้งค่าตัวแปรแวดล้อมดังนี้ (หากไม่มี ระบบจะใช้ Mock Mode อัตโนมัติ)
+   ```bash
     $env:DUSTBOY_API_KEY="your_api_key_here"
 
-3. **รันแอปพลิเคชัน:**
+4. **รันแอปพลิเคชัน:**
+   ```bash
     python app/app.py
 
-4. **เข้าใช้งาน::**
+6. **เข้าใช้งาน::**
     เปิดเว็บเบราว์เซอร์และไปที่: http://localhost:5000
 
 
@@ -72,16 +75,19 @@
 
 1. **สร้าง Docker Image (Build):**
     รันคำสั่งนี้ในโฟลเดอร์หลักของโปรเจค (ที่มีไฟล์ Dockerfile):
+    ```bash
     docker build -t safebreathe-app .
 
-2. **รัน Docker Container:**
+3. **รัน Docker Container:**
+    ```bash
     docker run -p 5000:5000 safebreathe-app
+    ```
     *(หากต้องการรันพร้อม API Key ให้เพิ่ม `-e DUSTBOY_API_KEY="your_api_key"` เข้าไปในคำสั่ง)*
 
-3. **เข้าใช้งาน:**
+5. **เข้าใช้งาน:**
     เปิดเว็บเบราว์เซอร์และไปที่: `http://localhost:5000`
 
-## 📡 โครงสร้าง API (Endpoints)
+## โครงสร้าง API (Endpoints)
 แอปพลิเคชันนี้มีหน้าต่างสำหรับการแสดงผลและการมอนิเตอร์ดังนี้:
 * **`GET /`** : หน้า UI หลัก (Dashboard) สำหรับแสดงค่าฝุ่นปัจจุบันและคำแนะนำ
 * **`GET /metrics`** : หน้าสำหรับให้ระบบ **Prometheus** เข้ามาดึงข้อมูล (Scrape) ค่าฝุ่นไปแสดงผลบน **Grafana**
