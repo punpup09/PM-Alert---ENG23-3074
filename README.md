@@ -6,7 +6,7 @@
 | รหัสนักศึกษา        | ชื่อ-นามสกุล         | ความรับผิดชอบ         |
 | ----------------- | --------------------|---------------------- |
 | B6608972          | พชร โจชัวร์ คริกเค     |Git, App Development   |
-| Bxxxxxxx          |ชื่อ นามสกุล           |Jenkins, Docker        |
+| B6628895          |ธัญเทพ คู่ชัยภูมิ         |Jenkins, Docker        |
 | Bxxxxxxx          | ชื่อ นามสกุล          |Terraform, Ansible     |
 | Bxxxxxxx          | ชื่อ นามสกุล          |Kubernetes, Monitoring |
 
