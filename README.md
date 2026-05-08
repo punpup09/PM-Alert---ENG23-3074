@@ -10,6 +10,12 @@
 | Bxxxxxxx          | ชื่อ นามสกุล          |Terraform, Ansible     |
 | Bxxxxxxx          | ชื่อ นามสกุล          |Kubernetes, Monitoring |
 
+## แอปพลิเคชัน
+* **ชื่อ:** PM-Aleart
+* **ประเภท:** Web App / REST API (มี Endpoint สำหรับ Prometheus)
+* **ภาษา / Framework:** Python / Flask
+* **คำอธิบาย:** PM-Alert เป็นแอปพลิเคชันเฝ้าระวังคุณภาพอากาศ PM2.5 แบบเรียลไทม์ โดยดึงข้อมูลจาก DustBoy API (CMU CCDC) มาแสดงผลบนหน้า Dashboard ระบบนี้ช่วยแก้ปัญหาการติดตามคุณภาพอากาศในพื้นที่โดยรอบ (เช่น ภายในมหาวิทยาลัยเทคโนโลยีสุรนารี และ จ.นครราชสีมา) พร้อมทั้งให้คำแนะนำการปฏิบัติตัวด้านสุขภาพตามเกณฑ์มาตรฐาน TH AQI ของประเทศไทย
+
 
 ## ฟีเจอร์หลัก (Key Features)
 *   **Real-time Monitoring:** ดึงข้อมูลค่าฝุ่น PM2.5 จากสถานีตรวจวัดจริง
@@ -18,6 +24,39 @@
 *   **Prometheus Integration:** มี Endpoint `/metrics` สำหรับให้ Prometheus ดึงข้อมูลไปทำกราฟบน Grafana
 *   **Dockerized:** บรรจุแอปพลิเคชันลงใน Docker Container เพื่อความสะดวกในการ Deploy
 
+
+## Architecture Diagram
+```text
+Developer
+    |
+    ▼ git push
+GitHub ────── webhook ──────▶ Jenkins CI/CD
+                                    |
+                 ┌──────────────────┼──────────────────┐
+                 ▼                  ▼                  ▼
+               Build               Test           Docker Build
+                                                       |
+                                                   Docker Hub
+                                                       |
+                                    ┌──────────────────┴──────────────────┐
+                                    ▼                                     ▼
+                                Terraform                              Ansible
+                                    |                                     |
+                                    └──────────────────┬──────────────────┘
+                                                       ▼
+                                               Kubernetes Cluster
+                                               ┌──────────────────┐
+                                               │ Pod 1      Pod 2 │
+                                               │ [App]      [App] │
+                                               │                  │
+                                               │ Service (NodePort:XXXXX) │
+                                               └─────────┬────────┘
+                                                         |
+                                    ┌────────────────────┴────────────────────┐
+                                    ▼                                         ▼
+                                Prometheus ───────────────────────────────▶ Grafana
+                              (scrape /metrics)                          (dashboard)
+```
 ---
 
 ## 📁 โครงสร้างโปรเจค (Project Structure)
@@ -53,7 +92,20 @@
 │
 └── README.md                   ← คน 1 (ทุกคนช่วยเขียน)
 ```
+## ⚙️ สิ่งที่ต้องติดตั้งก่อน (Prerequisites)
+ตรวจสอบให้แน่ใจว่าติดตั้งทุก tool ครบก่อนรันโปรเจค
 
+| Tool | Version | หน้าที่ |
+| :--- | :--- | :--- |
+| **Git** | >= 2.x | จัดการ source code |
+| **Docker** | >= 24.x | สร้างและรัน container |
+| **Jenkins** | >= 2.4xx | ระบบ CI/CD automation |
+| **Terraform** | >= 1.x | Provision infrastructure |
+| **Ansible** | >= 2.15 | Configure environment |
+| **kubectl** | >= 1.28 | สั่งงาน Kubernetes cluster |
+| **Minikube / K3s** | latest | Kubernetes แบบ local |
+| **Prometheus** | >= 2.x | เก็บ metrics |
+| **Grafana** | >= 10.x | แสดง dashboard |
 
 ## วิธีการติดตั้งและรันแอปพลิเคชัน (Setup Instructions)
 
