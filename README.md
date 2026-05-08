@@ -7,7 +7,7 @@
 | ----------------- | --------------------|---------------------- |
 | B6608972          | พชร โจชัวร์ คริกเค     |Git, App Development   |
 | B6628895          |ธัญเทพ คู่ชัยภูมิ         |Jenkins, Docker        |
-| Bxxxxxxx          | ชื่อ นามสกุล          |Terraform, Ansible     |
+| B6611859          | พิชญุตม์ พิมพ์ภาค          |Terraform, Ansible     |
 | Bxxxxxxx          | ชื่อ นามสกุล          |Kubernetes, Monitoring |
 
 ## แอปพลิเคชัน
