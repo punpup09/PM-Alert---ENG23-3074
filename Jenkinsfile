@@ -2,7 +2,6 @@ pipeline {
     agent any
     
     environment {
-        
         DOCKER_USER = 'tanyathep' 
         IMAGE_NAME = 'pm-alert-app'
         DOCKER_AUTH_ID = 'dockerhub-auth'
@@ -15,15 +14,24 @@ pipeline {
             }
         }
 
-        stage('2. Static Analysis') {
+        stage('2. Static Analysis / Test') {
             steps {
-                echo 'Checking code quality...'
+                echo 'Checking Python syntax...'
+                // ตรวจจับ Syntax Error ในโค้ด ถ้าโค้ดพัง Pipeline จะหยุดและขึ้นกากบาทสีแดงทันที
+                sh 'python3 -m py_compile app/app.py' 
             }
         }
 
         stage('3. Unit Test') {
             steps {
                 echo 'Running unit tests...'
+                // สร้างพื้นที่จำลอง (venv), ติดตั้ง Library, และสั่งรันไฟล์ Test
+                sh '''
+                python3 -m venv test-env
+                . test-env/bin/activate
+                pip install -r app/requirements.txt
+                python -m unittest app/test_app.py
+                '''
             }
         }
 
@@ -52,6 +60,7 @@ pipeline {
 
     post {
         always {
+            // เคลียร์ Session ป้องกันรหัสหลุด
             sh 'docker logout'
         }
     }
