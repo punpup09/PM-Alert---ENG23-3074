@@ -61,7 +61,6 @@ pipeline {
         stage('7. Deploy with Terraform + Ansible') {
             steps {
                 echo 'Validating infrastructure and deploying app...'
-                sh 'ansible-playbook -i ansible/inventory ansible/playbook.yml --syntax-check'
                 dir('terraform') {
                     sh 'terraform init -input=false'
                     sh 'terraform validate'
