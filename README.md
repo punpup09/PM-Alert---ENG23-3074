@@ -1,4 +1,4 @@
-# PM-Aleart
+# PM-Alert
 
 **PM-Aleart** เป็นแอปพลิเคชันสำหรับการตรวจสอบคุณภาพอากาศ (PM2.5) และให้คำแนะนำด้านความปลอดภัยแบบเรียลไทม์ โดยดึงข้อมูลจาก **DustBoy API (CMU CCDC)** โปรเจคนี้ถูกออกแบบมาเพื่อรองรับสถาปัตยกรรมแบบ Cloud-Native และสามารถทำงานร่วมกับระบบ CI/CD (Jenkins), Kubernetes และระบบ Monitoring (Prometheus/Grafana) ได้อย่างสมบูรณ์
 
