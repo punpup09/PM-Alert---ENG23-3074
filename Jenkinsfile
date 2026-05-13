@@ -17,7 +17,6 @@ pipeline {
         stage('2. Static Analysis / Test') {
             steps {
                 echo 'Checking Python syntax...'
-                // ตรวจจับ Syntax Error ในโค้ด ถ้าโค้ดพัง Pipeline จะหยุดและขึ้นกากบาทสีแดงทันที
                 sh 'python3 -m py_compile app/app.py' 
             }
         }
@@ -25,7 +24,6 @@ pipeline {
         stage('3. Unit Test') {
             steps {
                 echo 'Running unit tests...'
-                // สร้างพื้นที่จำลอง (venv), ติดตั้ง Library, และสั่งรันไฟล์ Test
                 sh '''
                 python3 -m venv test-env
                 . test-env/bin/activate
@@ -56,22 +54,21 @@ pipeline {
                 }
             }
         }
-    }
 
-        stage('7. Infrastructure & Deploy') {
+        stage('7. Deploy to Kubernetes') {
             steps {
-                echo 'Provisioning with Terraform and Deploying with Ansible...'
-                // 1. รัน Terraform เพื่อเตรียมเครื่อง (ถ้ามี)
-                // sh 'cd terraform && terraform init && terraform apply -auto-approve'
-                
-                // 2. รัน Ansible เพื่อส่งแอปขึ้น Kubernetes
-                sh 'ansible-playbook ansible/playbook.yml'
+                echo 'Provisioning Infrastructure and Deploying App...'
+                sh '''
+                cd terraform
+                terraform init
+                terraform apply -auto-approve
+                '''
             }
         }
+    } // <--- จบกล่อง stages ตรงนี้ครับ
 
     post {
         always {
-            // เคลียร์ Session ป้องกันรหัสหลุด
             sh 'docker logout'
         }
     }
