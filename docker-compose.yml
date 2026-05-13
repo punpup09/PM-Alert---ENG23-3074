@@ -1,0 +1,29 @@
+services:
+  # 1. กล่องแอปพลิเคชัน Flask ของเรา
+  web:
+    build: .
+    container_name: safebreathe_web
+    ports:
+      - "5000:5000"
+    restart: always
+
+  # 2. กล่อง Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      # ชี้เป้าไปที่ไฟล์ config ในโฟลเดอร์ monitoring
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - web
+
+  # 3. กล่อง Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
