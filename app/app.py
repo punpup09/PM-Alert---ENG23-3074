@@ -12,14 +12,14 @@ load_dotenv()
 app = Flask(__name__)
 
 # ==========================================
-# 📊 Metrics สำหรับ Prometheus
+# Metrics สำหรับ Prometheus
 # ==========================================
 APP_RAM_METRIC = Gauge('sut_app_ram_bytes', 'App RAM Usage in Bytes')
 APP_CPU_METRIC = Gauge('sut_app_cpu_percent', 'App CPU Usage Percentage')
 PM25_METRIC = Gauge('sut_dust_pm25', 'Current PM2.5 value', ['station_id'])
 
 # ==========================================
-# 📦 ตัวแปรเก็บข้อมูล (Cache)
+# ตัวแปรเก็บข้อมูล (Cache)
 # ==========================================
 cached_data = {
     "stations": [],
@@ -29,7 +29,7 @@ cached_data = {
 API_KEY = os.getenv("DUSTBOY_API_KEY")
 
 # ==========================================
-# ⚙️ ฟังก์ชันทำงานเบื้องหลัง (Background Tasks)
+# ฟังก์ชันทำงานเบื้องหลัง (Background Tasks)
 # ==========================================
 
 # 1. ฟังก์ชันดึงข้อมูลระบบ (RAM/CPU)
@@ -53,49 +53,45 @@ def fetch_data():
     while True:
         if API_KEY:
             print("\n" + "="*60)
-            print(f"📡 [Time: {time.strftime('%H:%M:%S')}] กำลังดึงข้อมูลจาก DustBoy API...")
+            print(f"[Time: {time.strftime('%H:%M:%S')}] Fetching data from DustBoy API...")
             url = f"https://open-api.cmuccdc.org/api/dustboy/station?apikey={API_KEY}"
             try:
-                resp = requests.get(url)
+                # เพิ่ม timeout ป้องกันเน็ตค้าง
+                resp = requests.get(url, timeout=10)
                 if resp.status_code == 200:
                     data_list = resp.json()
                     if isinstance(data_list, list):
                         cached_data["stations"] = data_list
                         cached_data["last_updated"] = time.strftime('%Y-%m-%d %H:%M:%S')
                         
-                        print(f"✅ ดึงข้อมูลสำเร็จ! พบ {len(data_list)} สถานีที่กำลังออนไลน์:")
+                        print(f"Success! Found {len(data_list)} online stations:")
                         
                         for station in data_list:
                             st_id = station.get('id')
                             st_name = station.get('dustboy_name')
                             pm_val = float(station.get('pm25', 0))
                             
-                            # ปริ้นท์สถานะออกทางหน้าจอ Terminal
-                            print(f"  📍 ID: {st_id: <5} | PM2.5: {pm_val: <5.1f} | {st_name}")
+                            # ปริ้นท์สถานะออกทางหน้าจอ Terminal (เอาอิโมจิออกแล้ว)
+                            print(f"  ID: {st_id: <5} | PM2.5: {pm_val: <5.1f} | {st_name}")
                             
                             # อัปเดต Metrics ให้ Prometheus
                             PM25_METRIC.labels(station_id=st_id).set(pm_val)
                             
-                        print("\n💡 (หมายเหตุ: ไอดีใดที่คุณตั้งไว้ในเว็บแต่ไม่ปรากฏในนี้ แปลว่าสถานีนั้นออฟไลน์ครับ)")
+                        print("\n(Note: IDs set in the web but not appearing here are offline)")
                     else:
-                        print("⚠️ รูปแบบข้อมูลที่ตอบกลับมาไม่ถูกต้อง")
+                        print("Warning: Invalid response data format")
                 else:
-                    # 💡 แก้ไขการย่อหน้าตรงนี้ให้ถูกต้องแล้วครับ!
-                    print(f"❌ API Error: โค้ดตอบกลับ HTTP {resp.status_code}")
+                    print(f"API Error: HTTP status code {resp.status_code}")
             except Exception as e:
-                print(f"❌ Error ระบบขัดข้อง: {e}")
+                print(f"System Error: {e}")
             print("="*60 + "\n")
             
         # พัก 10 นาที (600 วินาที) เพื่อรักษาโควตา 10 ครั้ง/ชั่วโมง
         time.sleep(600)
 
-# สั่งรัน Thread ทั้ง 2 ตัวให้ทำงานพร้อมกันเบื้องหลัง
-threading.Thread(target=update_sys_metrics, daemon=True).start()
-threading.Thread(target=fetch_data, daemon=True).start()
-
 
 # ==========================================
-# 🌐 เส้นทางของเว็บไซต์ (Routes)
+# เส้นทางของเว็บไซต์ (Routes)
 # ==========================================
 
 @app.route('/')
@@ -155,4 +151,8 @@ def metrics():
     
 
 if __name__ == '__main__':
+    # ย้ายการ Start Thread มาไว้ตรงนี้ เพื่อไม่ให้รบกวนตอนรัน Unit Test
+    threading.Thread(target=update_sys_metrics, daemon=True).start()
+    threading.Thread(target=fetch_data, daemon=True).start()
+    
     app.run(host='0.0.0.0', port=5000, debug=False)
