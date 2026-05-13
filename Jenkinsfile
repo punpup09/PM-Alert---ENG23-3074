@@ -57,16 +57,12 @@ pipeline {
 
         stage('7. Deploy to Kubernetes') {
             steps {
-                echo 'Validating Infrastructure and Deploying App...'
-                // ให้ Jenkins จำลองการรันเพื่อเช็ค Syntax (Dry Run)
+                echo 'Provisioning Infrastructure and Deploying App...'
                 sh '''
                 cd terraform
                 terraform init
-                terraform validate
+                terraform apply -auto-approve
                 '''
-                // เช็คความถูกต้องของ Ansible Playbook
-                sh 'ansible-playbook ansible/playbook.yml --syntax-check || true'
-                echo '✅ Infrastructure validation passed! Ready for Host deployment.'
             }
         }
     } // <--- จบกล่อง stages ตรงนี้ครับ
