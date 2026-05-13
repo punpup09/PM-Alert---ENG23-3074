@@ -1,4 +1,4 @@
-ansible/inventory
+ansible/.venv/
 terraform/.terraform/
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
@@ -7,6 +7,7 @@ terraform/terraform.tfstate.backup
 .env
 venv/
 env/
+test-env/
 
 # Python caches
 __pycache__/

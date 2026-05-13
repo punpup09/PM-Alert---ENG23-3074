@@ -1,26 +1,32 @@
 FROM jenkins/jenkins:lts
+
 USER root
 
-# ติดตั้ง Docker และ Python สำหรับ Test
+ARG TERRAFORM_VERSION=1.8.5
+ARG KUBECTL_VERSION=v1.30.0
+
 RUN apt-get update && \
-    apt-get install -y docker.io python3 python3-pip python3-venv wget unzip curl && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        docker.io \
+        python3 \
+        python3-pip \
+        python3-venv \
+        unzip && \
     rm -rf /var/lib/apt/lists/*
 
-# ติดตั้ง Terraform
-RUN wget https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip && \
-    unzip terraform_1.5.7_linux_amd64.zip && \
-    mv terraform /usr/local/bin/ && \
-    rm terraform_1.5.7_linux_amd64.zip
+RUN curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o /tmp/terraform.zip && \
+    unzip /tmp/terraform.zip -d /usr/local/bin && \
+    rm /tmp/terraform.zip
 
-# ติดตั้ง Ansible
-RUN pip3 install --break-system-packages ansible
+RUN curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl && \
+    chmod +x /usr/local/bin/kubectl
 
-# ติดตั้ง kubectl
-RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
-    chmod +x kubectl && \
-    mv kubectl /usr/local/bin/
+RUN curl -fsSL "https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64" -o /usr/local/bin/minikube && \
+    chmod +x /usr/local/bin/minikube
 
-# ติดตั้ง Minikube
-RUN curl -LO "https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64" && \
-    chmod +x minikube-linux-amd64 && \
-    mv minikube-linux-amd64 /usr/local/bin/minikube
+RUN python3 -m venv /opt/ansible-venv && \
+    /opt/ansible-venv/bin/pip install --no-cache-dir --upgrade pip ansible
+
+ENV PATH="/opt/ansible-venv/bin:${PATH}"

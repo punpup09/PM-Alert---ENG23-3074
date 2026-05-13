@@ -117,15 +117,18 @@ GitHub ────── webhook ──────▶ Jenkins CI/CD
 1. **ติดตั้ง Library ที่จำเป็น:**
    ```bash
    pip install -r app/requirements.txt
+   ```
 
 2. **กำหนดค่า Environment (ทางเลือก)**
     หากคุณมี API Key จาก CMU CCDC ให้ตั้งค่าตัวแปรแวดล้อมดังนี้ (หากไม่มี ระบบจะใช้ Mock Mode อัตโนมัติ)
    ```bash
     $env:DUSTBOY_API_KEY="your_api_key_here"
+   ```
 
 4. **รันแอปพลิเคชัน:**
    ```bash
     python app/app.py
+   ```
 
 6. **เข้าใช้งาน::**
     เปิดเว็บเบราว์เซอร์และไปที่: http://localhost:5000
@@ -138,6 +141,7 @@ GitHub ────── webhook ──────▶ Jenkins CI/CD
     รันคำสั่งนี้ในโฟลเดอร์หลักของโปรเจค (ที่มีไฟล์ Dockerfile):
     ```bash
     docker build -t safebreathe-app .
+    ```
 
 3. **รัน Docker Container:**
     ```bash
@@ -147,6 +151,21 @@ GitHub ────── webhook ──────▶ Jenkins CI/CD
 
 5. **เข้าใช้งาน:**
     เปิดเว็บเบราว์เซอร์และไปที่: `http://localhost:5000`
+
+### Deploy ด้วย Terraform + Ansible
+ส่วนนี้เป็นงาน Infrastructure ของคนที่ 3 โดย Terraform จะเตรียม Minikube namespace และสร้าง `ansible/inventory` จาก `terraform/inventory.tpl` จากนั้นเรียก Ansible เพื่อ apply Kubernetes manifest, ตั้ง image ที่ Jenkins push ขึ้น Docker Hub, scale replicas และตรวจ rollout status
+
+```bash
+cd terraform
+terraform init
+terraform apply -auto-approve -var="docker_image=tanyathep/pm-alert-app:latest"
+```
+
+ถ้าต้องการรัน Ansible แยกจาก Terraform:
+
+```bash
+ansible-playbook -i ansible/inventory ansible/playbook.yml
+```
 
 ## โครงสร้าง API (Endpoints)
 แอปพลิเคชันนี้มีหน้าต่างสำหรับการแสดงผลและการมอนิเตอร์ดังนี้:
