@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pm-alert
+  namespace: dustwatch #
+  labels:
+    app: pm-alert
+spec:
+  replicas: 2 #
+  selector:
+    matchLabels:
+      app: pm-alert
+  template:
+    metadata:
+      labels:
+        app: pm-alert
+      annotations:
+        # ส่วนนี้ทำให้ Prometheus ดึงข้อมูลได้ทันที (Phase 5)
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: pm-alert
+          image: punpup09/pm-alert:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+          
+          # Health Checks (เพิ่มความเป็นมืออาชีพตามแบบอาจารย์)
+          livenessProbe:
+            httpGet:
+              path: / # หรือหน้าแรกของแอป
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
