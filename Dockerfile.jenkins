@@ -1,0 +1,7 @@
+FROM jenkins/jenkins:lts
+USER root
+
+# เพิ่ม python3-venv และ python3-pip เข้าไป เพื่อจำลอง Environment
+RUN apt-get update && \
+    apt-get install -y docker.io python3 python3-pip python3-venv && \
+    rm -rf /var/lib/apt/lists/*
