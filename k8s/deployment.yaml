@@ -28,13 +28,14 @@ spec:
             - containerPort: 5000
               protocol: TCP
           
-          # Health Checks (เพิ่มความเป็นมืออาชีพตามแบบอาจารย์)
+          # Health Checks
           livenessProbe:
             httpGet:
-              path: / # หรือหน้าแรกของแอป
+              path: /
               port: 5000
             initialDelaySeconds: 15
             periodSeconds: 20
+            
           readinessProbe:
             httpGet:
               path: /
