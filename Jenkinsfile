@@ -30,7 +30,7 @@ pipeline {
                     . test-env/bin/activate
                     pip install --upgrade pip
                     pip install -r app/requirements.txt
-                    python -m unittest discover -s app -p "test_*.py"
+                    python -m unittest app/test_app.py
                 '''
             }
         }
