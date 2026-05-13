@@ -14,7 +14,7 @@ terraform {
 # ตรวจสอบว่า Minikube รันอยู่
 resource "null_resource" "check_minikube" {
   provisioner "local-exec" {
-    command = "minikube status || minikube start --driver=docker"
+    command = "minikube status || minikube start --driver=docker --force"
   }
 }
 
