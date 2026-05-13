@@ -28,13 +28,16 @@ services:
     depends_on:
       - prometheus
 
+  # 4. กล่อง Jenkins CI/CD (ใช้วิธี Build จาก Dockerfile.jenkins ที่เราสร้างขึ้น)
   jenkins:
-    image: jenkins/jenkins:lts
+    build: 
+      context: .
+      dockerfile: Dockerfile.jenkins
     container_name: pm-alert-jenkins 
     privileged: true
     user: root
     ports:
-      - "8080:8080"
+      - "8081:8080"
       - "50000:50000"
     volumes:
       - ./jenkins_home:/var/jenkins_home
