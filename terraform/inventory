@@ -1,8 +1,0 @@
-[local]
-localhost ansible_connection=local
-
-[local:vars]
-app_name=dustwatch
-namespace=dustwatch
-docker_image=yourdockerhub/dustwatch:latest
-app_port=5000

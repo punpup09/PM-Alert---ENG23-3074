@@ -22,8 +22,8 @@ spec:
     spec:
       containers:
         - name: pm-alert
-          image: punpup09/pm-alert:latest
-          imagePullPolicy: IfNotPresent
+          image: tanyathep/pm-alert-app:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 5000
               protocol: TCP

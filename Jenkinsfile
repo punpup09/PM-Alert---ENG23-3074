@@ -58,6 +58,17 @@ pipeline {
         }
     }
 
+        stage('7. Infrastructure & Deploy') {
+            steps {
+                echo 'Provisioning with Terraform and Deploying with Ansible...'
+                // 1. รัน Terraform เพื่อเตรียมเครื่อง (ถ้ามี)
+                // sh 'cd terraform && terraform init && terraform apply -auto-approve'
+                
+                // 2. รัน Ansible เพื่อส่งแอปขึ้น Kubernetes
+                sh 'ansible-playbook ansible/playbook.yml'
+            }
+        }
+
     post {
         always {
             // เคลียร์ Session ป้องกันรหัสหลุด
