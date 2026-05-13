@@ -61,10 +61,10 @@ pipeline {
         stage('7. Deploy with Terraform + Ansible') {
             steps {
                 echo 'Validating infrastructure and deploying app...'
+                // ให้ Jenkins ทำหน้าที่เช็คความถูกต้องของไฟล์อย่างเดียวพอครับ
                 dir('terraform') {
                     sh 'terraform init -input=false'
                     sh 'terraform validate'
-                    sh "terraform apply -auto-approve -input=false -var='docker_image=${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}'"
                 }
             }
         }
