@@ -1,0 +1,16 @@
+[local]
+localhost ansible_connection=local
+
+[local:vars]
+app_name=pm-alert
+namespace=dustwatch
+docker_image=tanyathep/pm-alert-app:latest
+app_port=5000
+service_port=80
+node_port=30001
+replicas=2
+deployment_name=pm-alert
+service_name=pm-alert-service
+container_name=pm-alert
+minikube_driver=docker
+minikube_start_extra_args=--force
