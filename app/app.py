@@ -16,8 +16,7 @@ app = Flask(__name__)
 # ==========================================
 APP_RAM_METRIC = Gauge('sut_app_ram_bytes', 'App RAM Usage in Bytes')
 APP_CPU_METRIC = Gauge('sut_app_cpu_percent', 'App CPU Usage Percentage')
-PM25_METRIC = Gauge('sut_dust_pm25', 'Current PM2.5 value', ['station_id'])
-
+PM25_METRIC = Gauge('sut_dust_pm25', 'Current PM2.5 value', ['station_id', 'station_name'])
 # ==========================================
 # ตัวแปรเก็บข้อมูล (Cache)
 # ==========================================
@@ -75,7 +74,7 @@ def fetch_data():
                             print(f"  ID: {st_id: <5} | PM2.5: {pm_val: <5.1f} | {st_name}")
                             
                             # อัปเดต Metrics ให้ Prometheus
-                            PM25_METRIC.labels(station_id=st_id).set(pm_val)
+                            PM25_METRIC.labels(station_id=st_id, station_name=st_name).set(pm_val)
                             
                         print("\n(Note: IDs set in the web but not appearing here are offline)")
                     else:

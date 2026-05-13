@@ -1,173 +1,278 @@
-# PM-Alert
+🚀 PM-Alert — ENG23 3074
+> แอปพลิเคชันสำหรับตรวจสอบคุณภาพอากาศ PM2.5 แบบเรียลไทม์ พร้อมระบบ CI/CD, Kubernetes deployment และ Monitoring ด้วย Prometheus/Grafana อัตโนมัติ
+---
+👥 สมาชิกในกลุ่ม
 
-**PM-alert** เป็นแอปพลิเคชันสำหรับการตรวจสอบคุณภาพอากาศ (PM2.5) และให้คำแนะนำด้านความปลอดภัยแบบเรียลไทม์ โดยดึงข้อมูลจาก **DustBoy API (CMU CCDC)** โปรเจคนี้ถูกออกแบบมาเพื่อรองรับสถาปัตยกรรมแบบ Cloud-Native และสามารถทำงานร่วมกับระบบ CI/CD (Jenkins), Kubernetes และระบบ Monitoring (Prometheus/Grafana) ได้อย่างสมบูรณ์
+| รหัสนักศึกษา | ชื่อ-นามสกุล | ความรับผิดชอบ |
+| :--- | :--- | :--- |
+| B6608972 | พชร โจชัวร์ คริกเค | Git, App Development |
+| B6628895 | ธัญเทพ คู่ชัยภูมิ | Jenkins, Docker |
+| B6611859 | พิชญุตม์ พิมพ์ภาค | Terraform, Ansible |
+| B6628239 | กิตติธัช แช่มขุนทด | Kubernetes, Monitoring |
 
-## 👥 สมาชิกในกลุ่ม
-| รหัสนักศึกษา        | ชื่อ-นามสกุล         | ความรับผิดชอบ         |
-| ----------------- | --------------------|---------------------- |
-| B6608972          | พชร โจชัวร์ คริกเค     |Git, App Development   |
-| B6628895          |ธัญเทพ คู่ชัยภูมิ        |Jenkins, Docker        |
-| B6611859          | พิชญุตม์ พิมพ์ภาค          |Terraform, Ansible     |
-| B6628239          | กิตติธัช แช่มขุนทด          |Kubernetes, Monitoring |
+---
+📌 ภาพรวมโปรเจค
 
-## แอปพลิเคชัน
-* **ชื่อ:** PM-alert-test
-* **ประเภท:** Web App / REST API (มี Endpoint สำหรับ Prometheus)
+**แอปพลิเคชัน**
+* **ชื่อ:** PM-Alert
+* **ประเภท:** Web App / REST API
 * **ภาษา / Framework:** Python / Flask
-* **คำอธิบาย:** PM-Alert เป็นแอปพลิเคชันเฝ้าระวังคุณภาพอากาศ PM2.5 แบบเรียลไทม์ โดยดึงข้อมูลจาก DustBoy API (CMU CCDC) มาแสดงผลบนหน้า Dashboard ระบบนี้ช่วยแก้ปัญหาการติดตามคุณภาพอากาศในพื้นที่โดยรอบ (เช่น ภายในมหาวิทยาลัยเทคโนโลยีสุรนารี และ จ.นครราชสีมา) พร้อมทั้งให้คำแนะนำการปฏิบัติตัวด้านสุขภาพตามเกณฑ์มาตรฐาน TH AQI ของประเทศไทย
+* **คำอธิบาย:** PM-Alert เป็นแอปพลิเคชันเฝ้าระวังคุณภาพอากาศ PM2.5 แบบเรียลไทม์ โดยดึงข้อมูลจาก DustBoy API (CMU CCDC) มาแสดงผลบนหน้า Dashboard เพื่อติดตามมลพิษในพื้นที่และให้คำแนะนำการปฏิบัติตัวด้านสุขภาพตามเกณฑ์มาตรฐาน TH AQI ของประเทศไทย
 
-
-## ฟีเจอร์หลัก (Key Features)
-*   **Real-time Monitoring:** ดึงข้อมูลค่าฝุ่น PM2.5 จากสถานีตรวจวัดจริง
-*   **Action Logic:** ประมวลผลและให้คำแนะนำด้านสุขภาพโดยอัตโนมัติ (เช่น Safe, Danger)
-*   **Mock Mode:** รองรับโหมดจำลองข้อมูลอัตโนมัติหากไม่ได้ใส่ API Key เพื่อให้ระบบยังคงทำงานได้โดยไม่พัง
-*   **Prometheus Integration:** มี Endpoint `/metrics` สำหรับให้ Prometheus ดึงข้อมูลไปทำกราฟบน Grafana
-*   **Dockerized:** บรรจุแอปพลิเคชันลงใน Docker Container เพื่อความสะดวกในการ Deploy
-
-
-## Architecture Diagram
+**Architecture Diagram**
 ```text
 Developer
-    |
-    ▼ git push
-GitHub ────── webhook ──────▶ Jenkins CI/CD
-                                    |
-                 ┌──────────────────┼──────────────────┐
-                 ▼                  ▼                  ▼
-               Build               Test           Docker Build
-                                                       |
-                                                   Docker Hub
-                                                       |
-                                    ┌──────────────────┴──────────────────┐
-                                    ▼                                     ▼
-                                Terraform                              Ansible
-                                    |                                     |
-                                    └──────────────────┬──────────────────┘
-                                                       ▼
-                                               Kubernetes Cluster
-                                               ┌──────────────────┐
-                                               │ Pod 1      Pod 2 │
-                                               │ [App]      [App] │
-                                               │                  │
-                                               │ Service (NodePort:XXXXX) │
-                                               └─────────┬────────┘
-                                                         |
-                                    ┌────────────────────┴────────────────────┐
-                                    ▼                                         ▼
-                                Prometheus ───────────────────────────────▶ Grafana
-                              (scrape /metrics)                          (dashboard)
+    │
+    ▼  git push
+ GitHub ──── webhook ────▶ Jenkins CI/CD
+                                │
+                    ┌───────────┼───────────┐
+                    ▼           ▼           ▼
+                 Build        Test      Docker Build
+                                            │
+                                            ▼
+                                       Docker Hub
+                                            │
+                                    ┌───────┴───────┐
+                                    ▼               ▼
+                                Terraform        Ansible
+                                    │               │
+                                    └───────┬───────┘
+                                            ▼
+                                   Kubernetes Cluster
+                                   ┌────────────────┐
+                                   │  Pod 1  Pod 2  │
+                                   │  [App]  [App]  │
+                                   │                │
+                                   │  Service (NodePort :30001)  │
+                                   └────────────────┘
+                                            │
+                              ┌─────────────┴──────────────┐
+                              ▼                             ▼
+                          Prometheus  ──────────────▶  Grafana
+                        (scrape /metrics)            (dashboard)
 ```
----
 
-## 📁 โครงสร้างโปรเจค (Project Structure)
+---
+📁 โครงสร้าง Repository
 ```text
-│
-├── app/                        ← คน 1 (App Developer)✅
-│   ├── app.py
-│   ├── requirements.txt
-│   └── templates/
-│       └── index.html
-│
-├── Dockerfile                  ← คน 1 (App Developer)✅
-│
-├── Jenkinsfile                 ← คน 2 (CI/CD Engineer)
-│
-├── terraform/                  ← คน 3 Infrastructure ✅
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   └── inventory.tpl
-│
-├── ansible/                    ← คน 3 Infrastructure ✅
-│   ├── inventory
-│   └── playbook.yml
-│
-├── k8s/                        ← คน 4 (Platform)
-│   ├── deployment.yaml
-│   └── service.yaml
-│
-├── monitoring/                 ← คน 4 (Platform)
-│   ├── prometheus.yml
-│   └── grafana-dashboard.json
-│
-└── README.md                   ← คน 1 (ทุกคนช่วยเขียน)
+PM-Alert/
+├── app/
+│   ├── app.py                  # โค้ดหลักของแอปพลิเคชัน Flask
+│   ├── test_app.py             # โค้ดสำหรับ Unit Test
+│   ├── test_api.py             # โค้ดสำหรับทดสอบดึงข้อมูล API 
+│   ├── requirements.txt        # Python dependencies
+│   └── templates/              # โฟลเดอร์เก็บไฟล์ HTML
+│       └── index.html          # หน้า Dashboard ของแอป
+├── Dockerfile                  # คำสั่งสร้าง Docker image ของแอปพลิเคชัน
+├── Dockerfile.jenkins          # คำสั่งสร้าง Custom Jenkins Image
+├── Jenkinsfile                 # กำหนด CI/CD pipeline ทุก stage
+├── terraform/
+│   ├── main.tf                 # กำหนด resource ที่จะ provision
+│   ├── variables.tf            # ตัวแปร input
+│   ├── outputs.tf              # ค่า output หลัง apply
+│   └── inventory.tpl           # Template สำหรับสร้างไฟล์ Ansible inventory
+├── ansible/
+│   ├── inventory               # รายชื่อ host เป้าหมาย (สร้างโดย Terraform)
+│   └── playbook.yml            # tasks สำหรับ configure environment บน Kubernetes
+├── k8s/
+│   ├── deployment.yaml         # กำหนด Pods และ replicas
+│   └── service.yaml            # เปิดพอร์ต NodePort (30001) ให้เข้าถึงแอปจากภายนอก
+├── monitoring/
+│   ├── prometheus.yml          # ตั้งค่า scrape target
+│   └── grafana-dashboard.json  # Dashboard ที่ export จาก Grafana
+└── README.md
 ```
-## ⚙️ สิ่งที่ต้องติดตั้งก่อน (Prerequisites)
+
+---
+⚙️ สิ่งที่ต้องติดตั้งก่อน (Prerequisites)
+
 ตรวจสอบให้แน่ใจว่าติดตั้งทุก tool ครบก่อนรันโปรเจค
 
 | Tool | Version | หน้าที่ |
 | :--- | :--- | :--- |
-| **Git** | >= 2.x | จัดการ source code |
-| **Docker** | >= 24.x | สร้างและรัน container |
-| **Jenkins** | >= 2.4xx | ระบบ CI/CD automation |
-| **Terraform** | >= 1.x | Provision infrastructure |
-| **Ansible** | >= 2.15 | Configure environment |
-| **kubectl** | >= 1.28 | สั่งงาน Kubernetes cluster |
+| **Git** | ≥ 2.x | จัดการ source code |
+| **Docker** | ≥ 24.x | สร้างและรัน container |
+| **Jenkins** | ≥ 2.4xx | ระบบ CI/CD automation |
+| **Terraform** | ≥ 1.x | Provision infrastructure |
+| **Ansible** | ≥ 2.15 | Configure environment |
+| **kubectl** | ≥ 1.28 | สั่งงาน Kubernetes cluster |
 | **Minikube / K3s** | latest | Kubernetes แบบ local |
-| **Prometheus** | >= 2.x | เก็บ metrics |
-| **Grafana** | >= 10.x | แสดง dashboard |
+| **Python** | 3.9 - 3.11 | รันแอปพลิเคชันแบบ Local |
+| **Prometheus** | ≥ 2.x | เก็บ metrics |
+| **Grafana** | ≥ 10.x | แสดง dashboard |
 
-## วิธีการติดตั้งและรันแอปพลิเคชัน (Setup Instructions)
+---
+🏃 วิธีรันโปรเจค (Quick Start)
 
-โปรเจคนี้รองรับการทำงาน 2 รูปแบบ ทั้งแบบ Local Development และแบบ Docker Container
+1. **Clone Repository**
+```bash
+git clone https://github.com/[username]/PM-Aleart---ENG23-3074.git
+cd PM-Aleart---ENG23-3074
+```
 
-### ตัวเลือกที่ 1: รันบนเครื่องโดยตรง (Local / Python)
-เหมาะสำหรับการพัฒนาและทดสอบโค้ดเบื้องต้น
+2. **รันแอปบนเครื่องโดยตรง (ไม่ผ่าน pipeline)**
+```bash
+cd app
+pip install -r requirements.txt
+# (ทางเลือก) กำหนด API Key: export DUSTBOY_API_KEY="your_api_key_here"
+python app.py
+# แอปรันที่ http://localhost:5000
+```
 
-1. **ติดตั้ง Library ที่จำเป็น:**
-   ```bash
-   pip install -r app/requirements.txt
-   ```
+3. **Build และรันด้วย Docker**
+```bash
+docker build -t tanyathep/pm-alert-app:latest .
+docker run -p 5000:5000 tanyathep/pm-alert-app:latest
+```
 
-2. **กำหนดค่า Environment (ทางเลือก)**
-    หากคุณมี API Key จาก CMU CCDC ให้ตั้งค่าตัวแปรแวดล้อมดังนี้ (หากไม่มี ระบบจะใช้ Mock Mode อัตโนมัติ)
-   ```bash
-    $env:DUSTBOY_API_KEY="your_api_key_here"
-   ```
+---
+🔄 CI/CD Pipeline (Jenkins)
 
-4. **รันแอปพลิเคชัน:**
-   ```bash
-    python app/app.py
-   ```
+**ลำดับการทำงานของ Pipeline**
+```text
+Checkout ──▶ Static Analysis ──▶ Unit Test ──▶ Docker Build ──▶ Push to Hub ──▶ Deploy
+```
 
-6. **เข้าใช้งาน::**
-    เปิดเว็บเบราว์เซอร์และไปที่: http://localhost:5000
+| Stage | คำอธิบาย |
+| :--- | :--- |
+| **Checkout** | ดึงโค้ดล่าสุดจาก GitHub |
+| **Static Analysis** | ตรวจสอบ syntax โค้ด Python |
+| **Unit Test** | สร้าง venv, ติดตั้ง dependencies และรัน `unittest` |
+| **Docker Build** | สร้าง Docker image ของแอปพลิเคชัน |
+| **Push to Docker Hub**| อัปโหลด image ขึ้น Docker Hub โดยใช้ credentials `dockerhub-auth` |
+| **Deploy** | ตรวจสอบ syntax ของ Ansible และรัน Terraform apply ซึ่งจะทำหน้าที่เรียก Ansible ไป Deploy บน Kubernetes อีกที |
 
+**วิธีตั้งค่า Jenkins**
+1. ติดตั้ง Jenkins และเปิดที่ `http://localhost:8080`
+2. ติดตั้ง plugin: Git, Pipeline, Docker Pipeline
+3. เพิ่ม credentials สำหรับ Docker Hub (ชื่อ `dockerhub-auth`)
+4. สร้าง Pipeline job ใหม่ และชี้ไปที่ repository นี้
+5. ตั้งค่า Webhook ใน GitHub ไปที่ `http://[jenkins-host]:8080/github-webhook/` ติ๊กเหตุการณ์ Push events
 
-### ตัวเลือกที่ 2: รันด้วย Docker (Production / CI/CD)
-เหมาะสำหรับการจำลองสภาพแวดล้อมจริงก่อนนำไป Deploy บน Kubernetes
+---
+🏗️ Infrastructure as Code
 
-1. **สร้าง Docker Image (Build):**
-    รันคำสั่งนี้ในโฟลเดอร์หลักของโปรเจค (ที่มีไฟล์ Dockerfile):
-    ```bash
-    docker build -t safebreathe-app .
-    ```
-
-3. **รัน Docker Container:**
-    ```bash
-    docker run -p 5000:5000 safebreathe-app
-    ```
-    *(หากต้องการรันพร้อม API Key ให้เพิ่ม `-e DUSTBOY_API_KEY="your_api_key"` เข้าไปในคำสั่ง)*
-
-5. **เข้าใช้งาน:**
-    เปิดเว็บเบราว์เซอร์และไปที่: `http://localhost:5000`
-
-### Deploy ด้วย Terraform + Ansible
-ส่วนนี้เป็นงาน Infrastructure ของคนที่ 3 โดย Terraform จะเตรียม Minikube namespace และสร้าง `ansible/inventory` จาก `terraform/inventory.tpl` จากนั้นเรียก Ansible เพื่อ apply Kubernetes manifest, ตั้ง image ที่ Jenkins push ขึ้น Docker Hub, scale replicas และตรวจ rollout status
-
+**Terraform — Provision Infrastructure**
 ```bash
 cd terraform
-terraform init
-terraform apply -auto-approve -var="docker_image=tanyathep/pm-alert-app:latest"
+terraform init      # ดาวน์โหลด provider plugins
+terraform plan      # ตรวจสอบว่าจะสร้างอะไรบ้าง
+terraform apply     # สร้าง resource จริง
 ```
+> **สิ่งที่ Terraform สร้าง:** เตรียม Minikube cluster, สร้าง Kubernetes namespace `dustwatch`, และนำ template มาสร้างเป็นไฟล์ `ansible/inventory` ให้กับ Ansible
 
-ถ้าต้องการรัน Ansible แยกจาก Terraform:
-
+**Ansible — Configure Environment**
 ```bash
-ansible-playbook -i ansible/inventory ansible/playbook.yml
+cd ansible
+ansible-playbook -i inventory playbook.yml
+```
+> **สิ่งที่ Ansible ทำ:** ช่วยติดตั้ง dependencies เพิ่มเติม, สร้าง namespace, apply ไฟล์ deployment และ service ลงใน Kubernetes, เซ็ตอัป docker image ของแอปพลิเคชัน, และตรวจสอบ rollout status
+> ⚠️ **หมายเหตุ:** ใน pipeline จริง Jenkins จะเรียก Terraform ซึ่งจะเรียกใช้ Ansible อัตโนมัติในขั้นตอน Deploy ไม่ต้องรันด้วยมือ
+
+---
+☸️ Kubernetes Deployment
+
+**Apply Manifests ด้วยตัวเอง**
+```bash
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
 ```
 
-## โครงสร้าง API (Endpoints)
-แอปพลิเคชันนี้มีหน้าต่างสำหรับการแสดงผลและการมอนิเตอร์ดังนี้:
-* **`GET /`** : หน้า UI หลัก (Dashboard) สำหรับแสดงค่าฝุ่นปัจจุบันและคำแนะนำ
-* **`GET /metrics`** : หน้าสำหรับให้ระบบ **Prometheus** เข้ามาดึงข้อมูล (Scrape) ค่าฝุ่นไปแสดงผลบน **Grafana**
+**ตรวจสอบสถานะ**
+```bash
+kubectl get pods -n dustwatch
+kubectl get svc -n dustwatch
+```
+
+**ผลลัพธ์ที่ควรจะได้**
+```text
+NAME                        READY   STATUS    RESTARTS   AGE
+pm-alert-xxxxxxxxx-xxxxx    1/1     Running   0          2m
+pm-alert-xxxxxxxxx-yyyyy    1/1     Running   0          2m
+
+NAME               TYPE       CLUSTER-IP     PORT(S)          AGE
+pm-alert-service   NodePort   10.96.xx.xxx   80:30001/TCP   2m
+```
+
+**เข้าถึงแอปพลิเคชัน**
+```text
+http://localhost:30001
+```
+
+---
+📊 Monitoring
+
+**Prometheus — เก็บ Metrics**
+* **ไฟล์ config:** `monitoring/prometheus.yml`
+* **Scrape:** ทุก 15 วินาที
+* **Target endpoint:** `http://[app-host]:5000/metrics`
+
+**รัน Prometheus:**
+```bash
+prometheus --config.file=monitoring/prometheus.yml
+# เปิด UI ที่ http://localhost:9090
+```
+
+**Grafana — แสดง Dashboard**
+* **ไฟล์ dashboard:** `monitoring/grafana-dashboard.json`
+* **Data source:** Prometheus (`http://localhost:9090`)
+
+**วิธี import dashboard:**
+1. เปิด Grafana ที่ `http://localhost:3000`
+2. ไปที่ Dashboards → Import
+3. อัปโหลดไฟล์ `grafana-dashboard.json`
+
+**Panels ใน Dashboard**
+| Panel | Metric (PromQL) | แสดงข้อมูลอะไร |
+| :--- | :--- | :--- |
+| PM2.5 Value | `sut_dust_pm25` | ค่าฝุ่นปัจจุบันแบ่งตาม ID สถานี |
+| App RAM Usage | `sut_app_ram_bytes` | แรมที่แอปพลิเคชันกำลังใช้งาน |
+| App CPU Usage | `sut_app_cpu_percent` | CPU ที่แอปพลิเคชันกำลังใช้งาน |
+
+---
+🌿 Branching Strategy
+
+```text
+main        ──── โค้ดที่พร้อม production, protected branch
+dev         ──── รวมโค้ดก่อน merge ขึ้น main
+feature/*   ──── พัฒนา feature แต่ละอัน
+```
+
+| Branch | Protected | คำอธิบาย |
+| :--- | :--- | :--- |
+| `main` | ✅ | trigger pipeline อัตโนมัติเมื่อ merge |
+| `dev` | ✅ | ทดสอบก่อน merge ขึ้น main |
+| `feature/*` | ❌ | พัฒนาแยกกันแล้วค่อย merge เข้า dev |
+
+---
+🧪 API Endpoints
+
+| Method | Endpoint | คำอธิบาย |
+| :--- | :--- | :--- |
+| `GET` | `/` | Health check และหน้า UI หลัก (Dashboard) แสดงค่าฝุ่น |
+| `GET` | `/metrics` | Prometheus metrics endpoint ส่งข้อมูลออกไปให้ Prometheus นำไปแสดงกราฟ |
+
+---
+🐛 ปัญหาที่พบบ่อย (Troubleshooting)
+
+**Pods ค้างอยู่ที่ `Pending` หรือ `ImagePullBackOff` ไม่ยอม Running**
+```bash
+kubectl describe pod pm-alert -n dustwatch
+# ดูที่ Events: อาจเกิดจาก resource ไม่พอ หรือ image pull error บน Docker hub
+```
+
+**Jenkins pipeline ล้มเหลวตอน Docker Build**
+```bash
+# ตรวจว่า Docker daemon รันอยู่
+sudo systemctl start docker
+# เพิ่ม jenkins user เข้า docker group
+sudo usermod -aG docker jenkins
+```
+
+**Prometheus แสดง target เป็น DOWN**
+```bash
+# ตรวจว่าแอปเปิด /metrics ได้จริง
+curl http://localhost:5000/metrics
+# ตรวจ prometheus.yml ว่า host:port ตรงกับแอปจริง
+```
