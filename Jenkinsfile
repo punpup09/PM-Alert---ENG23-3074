@@ -1,9 +1,10 @@
 pipeline {
     agent any
-    
+
     environment {
-        DOCKER_USER = 'tanyathep' 
+        DOCKER_USER = 'tanyathep'
         IMAGE_NAME = 'pm-alert-app'
+        IMAGE_TAG = 'latest'
         DOCKER_AUTH_ID = 'dockerhub-auth'
     }
 
@@ -14,10 +15,10 @@ pipeline {
             }
         }
 
-        stage('2. Static Analysis / Test') {
+        stage('2. Static Analysis') {
             steps {
                 echo 'Checking Python syntax...'
-                sh 'python3 -m py_compile app/app.py' 
+                sh 'python3 -m py_compile app/app.py'
             }
         }
 
@@ -25,51 +26,51 @@ pipeline {
             steps {
                 echo 'Running unit tests...'
                 sh '''
-                python3 -m venv test-env
-                . test-env/bin/activate
-                pip install -r app/requirements.txt
-                python -m unittest app/test_app.py
+                    python3 -m venv test-env
+                    . test-env/bin/activate
+                    pip install --upgrade pip
+                    pip install -r app/requirements.txt
+                    python -m unittest discover -s app -p "test_*.py"
                 '''
             }
         }
 
         stage('4. Docker Build') {
             steps {
-                echo 'Building Docker Image...'
-                sh "docker build -t ${DOCKER_USER}/${IMAGE_NAME}:latest ."
+                echo 'Building Docker image...'
+                sh "docker build -t ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
         stage('5. Security Scan') {
             steps {
-                echo 'Scanning image...'
+                echo 'Running lightweight image inspection...'
+                sh "docker image inspect ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG} > /dev/null"
             }
         }
 
         stage('6. Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: "${DOCKER_AUTH_ID}", passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER_ENV')]) {
-                    sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER_ENV --password-stdin"
-                    sh "docker push ${DOCKER_USER}/${IMAGE_NAME}:latest"
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER_ENV" --password-stdin'
+                    sh "docker push ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
         }
 
-        stage('7. Deploy to Kubernetes') {
+        stage('7. Deploy with Terraform + Ansible') {
             steps {
-                echo 'Provisioning Infrastructure and Deploying App...'
-                sh '''
-                cd terraform
-                terraform init
-                terraform apply -auto-approve
-                '''
+                dir('terraform') {
+                    sh 'terraform init -input=false'
+                    sh "terraform apply -auto-approve -input=false -var='docker_image=${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}'"
+                }
             }
         }
-    } // <--- จบกล่อง stages ตรงนี้ครับ
+    }
 
     post {
         always {
-            sh 'docker logout'
+            sh 'docker logout || true'
         }
     }
 }
