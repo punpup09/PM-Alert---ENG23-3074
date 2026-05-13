@@ -19,7 +19,7 @@
 
 ## ฟีเจอร์หลัก (Key Features)
 *   **Real-time Monitoring:** ดึงข้อมูลค่าฝุ่น PM2.5 จากสถานีตรวจวัดจริง
-*   **Action Logic:** ประมวลผลและให้คำแนะนำด้านสุขภาพโดยอัตโนมัติ (เช่น Safe, Danger)
+*   **Action Logic:** ประมวลผลและให้คำแนะนำด้านสุขภาพโดยอัตโนมัติ (เช่น Safe , Danger)
 *   **Mock Mode:** รองรับโหมดจำลองข้อมูลอัตโนมัติหากไม่ได้ใส่ API Key เพื่อให้ระบบยังคงทำงานได้โดยไม่พัง
 *   **Prometheus Integration:** มี Endpoint `/metrics` สำหรับให้ Prometheus ดึงข้อมูลไปทำกราฟบน Grafana
 *   **Dockerized:** บรรจุแอปพลิเคชันลงใน Docker Container เพื่อความสะดวกในการ Deploy
