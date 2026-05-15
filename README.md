@@ -315,3 +315,5 @@ kubectl port-forward -n dustwatch svc/pm-alert-service 5000:80
 2. ในหน้าตั้งค่า Grafana ช่อง Display Name ให้พิมพ์โค้ดนี้เพื่อดึงชื่อมาโชว์: 
    ${__field.labels.station_name}
 ```
+
+#test trigger pipeline
