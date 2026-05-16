@@ -316,4 +316,4 @@ kubectl port-forward -n dustwatch svc/pm-alert-service 5000:80
    ${__field.labels.station_name}
 ```
 
-#test trigger pipeline - 123456789101112131415
+#test trigger pipeline - 123
